@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Processador de XML NF-e</title>
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Estilos Gerais */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    /* Botões e Inputs */
+    input[type="file"], input[type="text"] {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+
+    label {
+      display: inline-block;
+      background: linear-gradient(135deg, #2980b9, #1abc9c);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: background 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    label:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button {
+      background: linear-gradient(135deg, #2980b9, #1abc9c);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.3s ease, transform 0.3s ease;
+      margin-top: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button.hidden {
+      display: none;
+    }
+
+    /* Log de Processamento */
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      resize: none;
+      font-family: monospace;
+      font-size: 0.9rem;
+      background-color: #f9f9f9;
+      color: #333;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Caixa de Seleção */
+    select {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #333;
+      background-color: #fff;
+      appearance: none; /* Remove a seta padrão do navegador */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='%23333' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Adiciona uma seta personalizada */
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    select:hover {
+      border-color: #2980b9;
+    }
+
+    select:focus {
+      border-color: #1abc9c;
+      outline: none;
+      box-shadow: 0 0 8px rgba(26, 188, 156, 0.3); /* Sombra suave ao focar */
+    }
+
+    option {
+      padding: 10px;
+      background-color: #fff;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    /* Nome do Arquivo Selecionado */
+    .file-info {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #555;
+      font-style: italic;
+    }
+
+    /* Rodapé com Link do LinkedIn */
+    footer {
+      margin-top: 25px;
+      font-size: 0.9rem;
+      color: #777;
+      text-align: center;
+    }
+
+    footer a {
+      color: #2980b9;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #1abc9c;
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+
+      button, label {
+        font-size: 0.9rem;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Processador de XML NF-e</h1>
+    <p>Informe o CNPJ da sua empresa:</p>
+    <input type="text" id="companyCNPJ" placeholder="Ex.: 00.000.000/0000-00" />
+    <p>Os arquivos são de notas emitidas ou recebidas?</p>
+    <select id="operationType">
+      <option value="emitted">Emitidas</option>
+      <option value="received">Recebidas</option>
+    </select>
+    <p>Selecione um arquivo ZIP contendo os XMLs:</p>
+    <label for="zipFileInput">Selecionar Arquivo ZIP</label>
+    <input type="file" id="zipFileInput" accept=".zip" />
+    <div class="file-info" id="fileInfo"></div>
+    <button onclick="processFiles()">Processar Arquivos</button>
+    <button onclick="clearLog()" class="hidden" id="clearLogButton">Limpar Log</button>
+    <textarea id="outputLog" readonly></textarea>
+    <button id="downloadButton" class="hidden" onclick="downloadExcel()">Baixar XLSX</button>
+    <footer>
+      Desenvolvido por <a href="https://www.linkedin.com/in/eliabeleite/" target="_blank">Eliabe Leite</a>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    let allData = []; // Armazena todos os dados processados
+
+    document.getElementById('zipFileInput').addEventListener('change', function () {
+      const fileInfoDiv = document.getElementById('fileInfo');
+      if (this.files.length > 0) {
+        fileInfoDiv.textContent = `Arquivo selecionado: ${this.files[0].name}`;
+      } else {
+        fileInfoDiv.textContent = '';
+      }
+    });
+
+    async function processFiles() {
+      const companyCNPJ = document.getElementById('companyCNPJ').value.replace(/\D/g, ''); // Remove caracteres não numéricos
+      const operationType = document.getElementById('operationType').value;
+      const zipFileInput = document.getElementById('zipFileInput');
+      const outputLog = document.getElementById('outputLog');
+      const downloadButton = document.getElementById('downloadButton');
+      const clearLogButton = document.getElementById('clearLogButton');
+
+      if (!companyCNPJ || companyCNPJ.length !== 14) {
+        alert('Por favor, insira um CNPJ válido.');
+        return;
+      }
+
+      if (!zipFileInput.files.length) {
+        alert('Por favor, selecione um arquivo ZIP.');
+        return;
+      }
+
+      outputLog.value = 'Iniciando processamento...\n';
+      allData = []; // Limpa os dados anteriores
+      downloadButton.classList.add('hidden'); // Esconde o botão de download
+      clearLogButton.classList.remove('hidden'); // Mostra o botão para limpar logs
+
+      try {
+        const zipFile = zipFileInput.files[0];
+        const arrayBuffer = await zipFile.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        let processedFilesCount = 0;
+        let unprocessedFilesCount = 0;
+
+        // Filtra apenas arquivos XML no ZIP
+        const xmlFiles = Object.keys(zip.files).filter(fileName => fileName.endsWith('.xml'));
+
+        for (const fileName of xmlFiles) {
+          outputLog.value += `Processando arquivo: ${fileName}...\n`;
+          try {
+            const xmlContent = await zip.file(fileName).async('string');
+            const parsedData = parseNFeXml(xmlContent, fileName, companyCNPJ, operationType);
+            allData.push(...parsedData);
+            processedFilesCount++;
+            outputLog.value += `Arquivo "${fileName}" processado com sucesso.\n`;
+          } catch (error) {
+            unprocessedFilesCount++;
+            outputLog.value += `Erro ao processar "${fileName}": ${error.message}\n`;
+          }
+        }
+
+        outputLog.value += `\nProcessamento concluído. Processados: ${processedFilesCount}, Não processados: ${unprocessedFilesCount}.\n`;
+
+        if (processedFilesCount > 0) {
+          downloadButton.classList.remove('hidden'); // Mostra o botão de download
+        }
+      } catch (error) {
+        outputLog.value = `Erro durante o processamento: ${error.message}\n`;
+      }
+    }
+
+    function parseNFeXml(xmlContent, fileName, companyCNPJ, operationType) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlContent, 'application/xml');
+
+      // Validação de XML
+      if (xmlDoc.querySelector('parsererror')) {
+        throw new Error(`O arquivo "${fileName}" não é um XML válido.`);
+      }
+
+      const infNFe = xmlDoc.querySelector('infNFe');
+      if (!infNFe) throw new Error(`O arquivo "${fileName}" não contém a tag "infNFe"`);
+
+      const ide = infNFe.querySelector('ide');
+      const total = infNFe.querySelector('ICMSTot');
+      const emit = infNFe.querySelector('emit');
+      const dest = infNFe.querySelector('dest');
+
+      const tipoOperacao = ide?.querySelector('tpNF')?.textContent;
+
+      // Extrai a chave de acesso e garante que tenha exatamente 44 caracteres
+      let chaveNFe = infNFe.getAttribute('Id') || '';
+      chaveNFe = chaveNFe.replace(/[^0-9]/g, ''); // Remove caracteres não numéricos
+      chaveNFe = chaveNFe.slice(-44); // Pega os últimos 44 dígitos
+
+      const cnpjEmitente = emit?.querySelector('CNPJ')?.textContent || '';
+      const cnpjCpfDestinatario = dest?.querySelector('CNPJ')?.textContent || dest?.querySelector('CPF')?.textContent || ''; // Combina CNPJ e CPF
+      const nomeDestinatario = dest?.querySelector('xNome')?.textContent || '';
+
+      // Determina a Operação com base nas regras fornecidas
+      let operacao = '';
+      if (operationType === 'emitted') {
+        if (cnpjEmitente === companyCNPJ) {
+          operacao = tipoOperacao === '1' ? 'Saída' : 'Entrada';
+        } else {
+          operacao = tipoOperacao === '1' ? 'Entrada' : 'Terceiros';
+        }
+      } else if (operationType === 'received') {
+        if (cnpjEmitente === companyCNPJ) {
+          operacao = tipoOperacao === '0' ? 'Entrada Própria' : 'Saída';
+        } else if (cnpjCpfDestinatario === companyCNPJ) {
+          operacao = tipoOperacao === '1' ? 'Entrada' : 'Terceiros';
+        } else {
+          operacao = 'Terceiros';
+        }
+      }
+
+      const notaInfo = {
+        Operacao: operacao,
+        chave_nfe: chaveNFe, // Chave de acesso formatada
+        numero_nfe: ide?.querySelector('nNF')?.textContent || '',
+        data_emissao: formatDate(ide?.querySelector('dhEmi')?.textContent || ''),
+        tipo_operacao: tipoOperacao, // Mantém 1 ou 0 sem alterar
+        destino_operacao: ide?.querySelector('idDest')?.textContent || '',
+        valor_total_produtos: parseFloat(total?.querySelector('vProd')?.textContent || 0),
+        valor_total_impostos: parseFloat(total?.querySelector('vTotTrib')?.textContent || 0),
+        valor_total_nfe: parseFloat(total?.querySelector('vNF')?.textContent || 0),
+        cnpj_emitente: cnpjEmitente,
+        nome_emitente: emit?.querySelector('xNome')?.textContent || '',
+        uf_emitente: emit?.querySelector('UF')?.textContent || '',
+        cnpj_cpf_destinatario: cnpjCpfDestinatario, // Combina CNPJ e CPF
+        nome_destinatario: nomeDestinatario,
+        uf_destinatario: dest?.querySelector('UF')?.textContent || '',
+      };
+
+      const detElements = infNFe.querySelectorAll('det');
+      const data = [];
+
+      detElements.forEach(det => {
+        const prod = det.querySelector('prod');
+        const imposto = det.querySelector('imposto');
+        const icms = imposto?.querySelector('ICMS > *');
+        const pis = imposto?.querySelector('PIS > *');
+        const cofins = imposto?.querySelector('COFINS > *');
+        const ipi = imposto?.querySelector('IPI > IPITrib');
+
+        // Determina o CST ou CSOSN
+        const codigoSituacaoTributariaICMS = icms?.querySelector('CST')?.textContent || icms?.querySelector('CSOSN')?.textContent || '';
+
+        const itemInfo = {
+          nItem: det.getAttribute('nItem') || '',
+          cProd: prod?.querySelector('cProd')?.textContent || '',
+          xProd: prod?.querySelector('xProd')?.textContent || '',
+          cEANTrib: prod?.querySelector('cEANTrib')?.textContent || '',
+          uTrib: prod?.querySelector('uTrib')?.textContent || '',
+          quantidade_tributavel: parseFloat(prod?.querySelector('qTrib')?.textContent || 0), // Quantidade tributável
+          valor_unitario_tributavel: parseFloat(prod?.querySelector('vUnTrib')?.textContent || 0), // Valor unitário tributável
+          valor_produto: parseFloat(prod?.querySelector('vProd')?.textContent || 0), // Valor total do produto
+          cfop: prod?.querySelector('CFOP')?.textContent || '',
+          ncm: prod?.querySelector('NCM')?.textContent || '',
+          codigo_sit_tributaria_icms: codigoSituacaoTributariaICMS, // CST ou CSOSN
+          aliquota_icms: parseFloat(icms?.querySelector('pICMS')?.textContent || 0), // Alíquota ICMS
+          base_calculo_icms: parseFloat(icms?.querySelector('vBC')?.textContent || 0), // Base de cálculo ICMS
+          valor_icms: parseFloat(icms?.querySelector('vICMS')?.textContent || 0), // Valor ICMS
+          base_calculo_icms_st: parseFloat(icms?.querySelector('vBCST')?.textContent || 0), // Base de cálculo ICMS ST
+          aliquota_icms_st: parseFloat(icms?.querySelector('pICMSST')?.textContent || 0), // Alíquota ICMS ST
+          valor_icms_st: parseFloat(icms?.querySelector('vICMSST')?.textContent || 0), // Valor ICMS ST
+          codigo_sit_tributaria_pis: pis?.querySelector('CST')?.textContent || '',
+          aliquota_pis: parseFloat(pis?.querySelector('pPIS')?.textContent || 0), // Alíquota PIS
+          base_calculo_pis: parseFloat(pis?.querySelector('vBC')?.textContent || 0), // Base de cálculo PIS
+          valor_pis: parseFloat(pis?.querySelector('vPIS')?.textContent || 0), // Valor PIS
+          codigo_sit_tributaria_cofins: cofins?.querySelector('CST')?.textContent || '',
+          aliquota_cofins: parseFloat(cofins?.querySelector('pCOFINS')?.textContent || 0), // Alíquota COFINS
+          base_calculo_cofins: parseFloat(cofins?.querySelector('vBC')?.textContent || 0), // Base de cálculo COFINS
+          valor_cofins: parseFloat(cofins?.querySelector('vCOFINS')?.textContent || 0), // Valor COFINS
+          aliquota_ipi: parseFloat(ipi?.querySelector('pIPI')?.textContent || 0), // Alíquota IPI
+          base_calculo_ipi: parseFloat(ipi?.querySelector('vBC')?.textContent || 0), // Base de cálculo IPI
+          valor_ipi: parseFloat(ipi?.querySelector('vIPI')?.textContent || 0), // Valor IPI
+        };
+
+        data.push({ ...notaInfo, ...itemInfo });
+      });
+
+      return data;
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const day = ('0' + date.getDate()).slice(-2);
+      const month = ('0' + (date.getMonth() + 1)).slice(-2);
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    function clearLog() {
+      const outputLog = document.getElementById('outputLog');
+      outputLog.value = ''; // Limpa o log
+    }
+
+    function downloadExcel() {
+      // Dados consolidados
+      const worksheet = XLSX.utils.json_to_sheet(allData.map(row => ({
+        Operacao: row.Operacao,
+        chave_nfe: row.chave_nfe,
+        numero_nfe: row.numero_nfe,
+        data_emissao: row.data_emissao,
+        tipo_operacao: row.tipo_operacao,
+        destino_operacao: row.destino_operacao,
+        valor_total_produtos: parseFloat(row.valor_total_produtos),
+        valor_total_impostos: parseFloat(row.valor_total_impostos),
+        valor_total_nfe: parseFloat(row.valor_total_nfe),
+        cnpj_emitente: row.cnpj_emitente,
+        nome_emitente: row.nome_emitente,
+        uf_emitente: row.uf_emitente,
+        cnpj_cpf_destinatario: row.cnpj_cpf_destinatario, // Combina CNPJ e CPF
+        nome_destinatario: row.nome_destinatario,
+        uf_destinatario: row.uf_destinatario,
+        nItem: row.nItem,
+        cProd: row.cProd,
+        xProd: row.xProd,
+        cEANTrib: row.cEANTrib,
+        uTrib: row.uTrib,
+        quantidade_tributavel: parseFloat(row.quantidade_tributavel),
+        valor_unitario_tributavel: parseFloat(row.valor_unitario_tributavel),
+        valor_produto: parseFloat(row.valor_produto),
+        cfop: row.cfop,
+        ncm: row.ncm,
+        codigo_sit_tributaria_icms: row.codigo_sit_tributaria_icms,
+        aliquota_icms: parseFloat(row.aliquota_icms),
+        base_calculo_icms: parseFloat(row.base_calculo_icms),
+        valor_icms: parseFloat(row.valor_icms),
+        base_calculo_icms_st: parseFloat(row.base_calculo_icms_st),
+        aliquota_icms_st: parseFloat(row.aliquota_icms_st),
+        valor_icms_st: parseFloat(row.valor_icms_st),
+        codigo_sit_tributaria_pis: row.codigo_sit_tributaria_pis,
+        aliquota_pis: parseFloat(row.aliquota_pis),
+        base_calculo_pis: parseFloat(row.base_calculo_pis),
+        valor_pis: parseFloat(row.valor_pis),
+        codigo_sit_tributaria_cofins: row.codigo_sit_tributaria_cofins,
+        aliquota_cofins: parseFloat(row.aliquota_cofins),
+        base_calculo_cofins: parseFloat(row.base_calculo_cofins),
+        valor_cofins: parseFloat(row.valor_cofins),
+        aliquota_ipi: parseFloat(row.aliquota_ipi),
+        base_calculo_ipi: parseFloat(row.base_calculo_ipi),
+        valor_ipi: parseFloat(row.valor_ipi),
+      })));
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Dados Consolidados");
+
+      // Resumo ICMS
+      const resumoICMS = generateICMSSummary(allData);
+      const resumoICMSWorksheet = XLSX.utils.json_to_sheet(resumoICMS);
+      XLSX.utils.book_append_sheet(workbook, resumoICMSWorksheet, "Resumo ICMS");
+
+      // Resumo PIS/COFINS
+      const resumoPISCOFINS = generatePISCOFINSSummary(allData);
+      const resumoPISCOFINSWorksheet = XLSX.utils.json_to_sheet(resumoPISCOFINS);
+      XLSX.utils.book_append_sheet(workbook, resumoPISCOFINSWorksheet, "Resumo PIS_COFINS");
+
+      // Salva o arquivo Excel
+      XLSX.writeFile(workbook, "dados_processados.xlsx");
+    }
+
+    function generateICMSSummary(data) {
+      const summary = {};
+
+      data.forEach(item => {
+        const key = `${item.cfop}-${item.codigo_sit_tributaria_icms}-${item.aliquota_icms}`;
+        if (!summary[key]) {
+          summary[key] = {
+            CFOP: item.cfop,
+            CST_ICMS: item.codigo_sit_tributaria_icms,
+            ALIQ_ICMS: parseFloat(item.aliquota_icms),
+            BC_ICMS: 0,
+            VL_ICMS: 0,
+          };
+        }
+        summary[key].BC_ICMS += parseFloat(item.base_calculo_icms) || 0;
+        summary[key].VL_ICMS += parseFloat(item.valor_icms) || 0;
+      });
+
+      // Converte o objeto de resumo em um array e ordena por CFOP
+      return Object.values(summary).sort((a, b) => a.CFOP - b.CFOP);
+    }
+
+    function generatePISCOFINSSummary(data) {
+      const summary = {};
+
+      data.forEach(item => {
+        const key = `${item.cfop}-${item.codigo_sit_tributaria_pis}-${item.aliquota_pis}-${item.aliquota_cofins}`;
+        if (!summary[key]) {
+          summary[key] = {
+            CFOP: item.cfop,
+            CST_PIS_COFINS: item.codigo_sit_tributaria_pis,
+            BC_PIS: 0,
+            ALIQ_PIS: parseFloat(item.aliquota_pis),
+            VL_PIS: 0,
+            BC_COFINS: 0,
+            ALIQ_COFINS: parseFloat(item.aliquota_cofins),
+            VL_COFINS: 0,
+          };
+        }
+        summary[key].BC_PIS += parseFloat(item.base_calculo_pis) || 0;
+        summary[key].VL_PIS += parseFloat(item.valor_pis) || 0;
+        summary[key].BC_COFINS += parseFloat(item.base_calculo_cofins) || 0;
+        summary[key].VL_COFINS += parseFloat(item.valor_cofins) || 0;
+      });
+
+      // Converte o objeto de resumo em um array e ordena por CFOP
+      return Object.values(summary).sort((a, b) => a.CFOP - b.CFOP);
+    }
+  </script>
+</body>
+</html>
