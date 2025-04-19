@@ -22,5 +22,17 @@
     "cargo1": "Diretor Executivo",
     "assinatura2": "Maria Santos",
     "cargo2": "Coordenadora de Projetos"
+  },
+    {
+    "nome": "Giselly Chaves",
+    "palestra": "Palestra de sei lá o que",
+    "data": "2025-04-19",
+    "carga": "4",
+    "texto": "Certificamos que Giselly Chaves participou da palestra/workshop \"Palestra de sei lá o que\", realizada em 18/04/2025, com carga horária de 4 horas.",
+    "codigo": "R2LZZWXSESBD",
+    "assinatura1": "Fulano de Tal",
+    "cargo1": "Diretor Executivo",
+    "assinatura2": "Sei la quem",
+    "cargo2": "Coordenadora de Projetos"
   }
 ]
